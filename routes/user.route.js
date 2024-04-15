@@ -43,12 +43,21 @@ router.get('/', async (req, res) => {
 
 router.post('/login', async (req, res) => {
     const body = this.body;
-    await User.findOne(body, 'username')
+    await User.findOne(body.username, 'username password')
     .then(docs => {
+        bcrypt.compare(body.password, docs.password, (err, res) => {
+            if(err){
+                console.error(err);
+                res.json({error: 'invalid password'})
+            }
+            if(!res) {
+                res.json({error: 'invalid password', auth: false})
+            }
+        })
         res.json({auth: true, username: docs.username});
     })
     .catch(err => {
-        res.json({auth: false})
+        res.json({error: 'invalid username', auth: false})
     })
 })
 
